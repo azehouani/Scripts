@@ -1,0 +1,48 @@
+---
+- name: Execute SQL scripts on PostgreSQL database in order
+  hosts: postgresql
+  become: yes
+  gather_facts: no
+  vars:
+    db_name: your_database_name
+    db_user: your_database_user
+    db_password: your_database_password
+    script_files:
+      - "1_script.sql"
+      - "2_script.sql"
+      - "3_script.sql"
+
+  tasks:
+    - name: Ensure the PostgreSQL Python library is installed
+      ansible.builtin.pip:
+        name: psycopg2-binary
+
+    - name: Check database connection
+      community.postgresql.postgresql_info:
+        login_user: "{{ db_user }}"
+        login_password: "{{ db_password }}"
+        login_host: "{{ ansible_host }}"
+      register: db_connection_check
+      failed_when: db_connection_check.failed
+
+    - name: Fail if database connection is not established
+      ansible.builtin.fail:
+        msg: "Cannot connect to the database with the provided credentials."
+      when: db_connection_check.failed
+
+    - name: Copy SQL scripts to remote server
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: "/tmp/sql_scripts/{{ item }}"
+        mode: '0644'
+      loop: "{{ script_files }}"
+      delegate_to: localhost
+
+    - name: Execute SQL scripts in order
+      community.postgresql.postgresql_query:
+        db: "{{ db_name }}"
+        login_user: "{{ db_user }}"
+        login_password: "{{ db_password }}"
+        login_host: "{{ ansible_host }}"
+        query: "{{ lookup('file', '/tmp/sql_scripts/' + item) }}"
+      loop: "{{ script_files }}"
