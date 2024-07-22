@@ -1,0 +1,24 @@
+---
+- name: Print sub-list elements
+  hosts: localhost
+  tasks:
+    - name: Define the variable
+      set_fact:
+        Secrib:
+          - server:
+              - scp1
+              - scp2
+          - db:
+              - scp3
+              - scp4
+          - api:
+              - scp5
+              - scp6
+              - scp7
+
+    - name: Print elements of sub-lists
+      debug:
+        msg: "{{ item[0] }} have {{ item[1] }}"
+      with_subelements:
+        - "{{ Secrib }}"
+        - "{{ item.values() | list | first }}"
