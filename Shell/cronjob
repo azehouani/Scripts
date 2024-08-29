@@ -1,0 +1,12 @@
+#!/bin/bash
+
+while true; do
+    current_time=$(date +"%H:%M")
+    
+    if [ "$current_time" == "02:00" ]; then
+        /usr/bin/python3 /path/to/your/execute_scripts.py >> /path/to/log_file.log 2>&1
+        sleep 86400  # Sleep for 24 hours
+    else
+        sleep 60  # Check every minute
+    fi
+done
