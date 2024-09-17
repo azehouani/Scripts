@@ -1,38 +1,18 @@
-Jenkins Job Documentation: ile-manage-services
+I would like to inform you that we have successfully executed the disaster recovery exercise on the UAT environment. The active machine is now ilcuatap02, and ilcuatap01 should not be used to start any services. Additionally, the DNS is currently pointing to ilcuatap02, and all Autosys jobs that were previously running on ilcuatap01 have been switched to ilcuatap02.
 
-Introduction
-The Jenkins job ile-manage-services is designed to automate the process of deploying and managing services across different environments. The primary objective is to eliminate manual actions on various environments while maintaining stable, versioned releases of projects and artifacts (JARs). This job centralizes and automates the deployment, management, and configuration of services through a single interface with predefined steps.
+Please conduct all necessary tests this week to identify any potential issues before we apply the disaster recovery exercise in the production environment.
 
-Job Link
-Job Name: ile-manage-services
-Jenkins Link: www.jenkins.com/ilc-manage-services
-Job Steps
-Checkout
-Description: This step retrieves the latest version of the Ansible project, which is used to manage the various services to be deployed and configured.
-Setup Server
-Description: This step configures the profile file associated with each environment, using the specified parameters. It prepares the target environment for deployment or service management.
-Stop Services
-Description: This step stops the services currently running in the selected environment.
-Restart Services
-Description: This step restarts the services that have been stopped or need a restart after updates or changes.
-Deploy Services
-Description: This step deploys new services or updates existing services in the selected environment, according to the provided parameters.
-Job Parameters
-Environment
-Description: This parameter allows you to select the target environment for the process (e.g., dev, test, prod).
-Option
-Description: This parameter defines the operation to be applied from the following options:
-Release: Deploys a new version of the service.
-Stop: Stops the currently running services.
-Restart: Restarts the services.
-Update Profile File: Reconfigures or updates the environment profile file, using the settings defined in the Ansible playbooks.
-Deploy All Services
-Description: If selected, this option deploys all Java services and reporting services to the target environment.
-IL Reporting Service
-Description: Deploys the ile-reporting-service project. You can specify the branch you want to deploy via the node_branche parameter (default is the master branch).
-Is Snapshot
-Description: This parameter determines whether artifacts should be retrieved from the Nexus snapshot repository. If selected, artifacts are downloaded from the snapshot repository; otherwise, they are retrieved from the Release repository.
-Java Service
-Description: Allows you to select the name of the Java service to deploy and specify the version of the JAR to use. By default, the latest version is selected, which retrieves the most recent version available on Nexus.
-Conclusion
-The Jenkins job ile-manage-services is a powerful tool for automating the deployment and management processes for services across different environments. With its many configurable parameters, it offers great flexibility and ensures that services are deployed and managed consistently and efficiently.
+Furthermore, we have discovered several projects and scripts deployed on the machine that are not versioned in any Git repository. These include:
+
+eod_replay.sh
+ilc-sender
+ilc-api-bir-mq-tool
+Kindly inform us if these files are being used by any applications so we can include them in the disaster recovery process.
+
+Additionally, we found that some services, including service integrator and advices integrator, are deployed in versions that do not adhere to the standard norms. These versions are not versioned on Nexus and are also deployed in production.
+
+Lastly, for the EWS service, the checksum does not match between the version on Nexus and the one in production. Please avoid making direct modifications to the jars. For any deployment, ensure that the versions deployed are consistent with those on Nexus.
+
+Thank you for your attention to these matters. Please let me know if you need any further clarification.
+
+Best regards,
