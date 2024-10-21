@@ -1,22 +1,62 @@
-Job Purpose
-This Jenkins job automates the process of cloning projects from GitHub repositories to various environments. It eliminates the need for manual modifications on servers, ensures that deployed scripts are in sync with the Git repositories, and maintains version control of the source files. This is particularly useful for environments such as User Acceptance Testing (UAT) and Production (PROD).
+Automated Deployment Process Documentation
+1. Overview
+This document details the architecture and process of automating the deployment of services across multiple environments using Jenkins, Ansible, and HashiCorp Vault. The system is designed to handle production and non-production environments separately, ensuring secure, synchronized, and consistent deployments.
 
-Job Steps
-1. Clone Repositories
-Purpose: Clone the specified project to the selected environment.
-Functionality: This step pulls the latest version of the project from GitHub based on the specified branch. It ensures that the environment has the most recent updates from the repository, maintaining consistency and version control.
-Usage: Essential for synchronizing the deployed scripts in various environments.
-2. Clone Repository to Backup Server
-Purpose: Clone the same version of the project to the backup server for UAT and PROD environments.
-Functionality: This step ensures that the backup server mirrors the changes made in the primary environment. By cloning the same version of the project, it helps in maintaining redundancy and ensures that both environments are synchronized.
-Usage: Critical for ensuring that the backup environment is ready for failover or testing scenarios.
-Job Parameters
-Clone Autosys: This option allows the user to clone and update Autosys scripts deployed on the server from the ilc-autosys project on GitHub. When selected, it triggers the cloning process for the Autosys-related files.
+2. Architecture
+Jenkins Master and Slave Nodes:
 
-autosys_branch: This parameter specifies the branch of the ilc-autosys repository to clone or rebase with. It allows users to choose the appropriate version or environment for the Autosys scripts.
+Jenkins Master: Central orchestrator for managing jobs and workflows.
+Slave 1 (Prod Environment): Dedicated to deploying and managing services in the production environment.
+Slave 2 (Non-Prod Environment): Handles deployment for non-production environments like UAT, Dev, and Test.
+HashiCorp Vault:
 
-Clone Script: This option enables the cloning and updating of the script folder deployed on the server from the ilc-script project on GitHub. It ensures that the latest scripts are always available on the server.
+Production Vault: Manages secrets for production deployments.
+Non-Production Vault: Handles secrets for non-production deployments.
+Both Vault instances securely store secrets, removing them from scripts to ensure secure communications between services and components.
+Ansible Playbooks:
 
-script_branch: This parameter indicates the branch of the ilc-script repository that the job should clone or rebase with. This provides flexibility in selecting the correct version of the scripts.
+Multiple Playbooks are employed to automate deployment and configuration of services across environments, enabling version control and easy management of configurations.
+Parallel Backup Deployments:
 
-This Jenkins job streamlines the cloning process, reducing the risk of manual errors and ensuring that all environments are consistently updated with the latest versions from the Git repositories. This enhances operational efficiency and helps maintain high availability in case of server failures.
+Backup machines for UAT and PROD are deployed and synchronized in parallel with the primary services. This ensures up-to-date backup machines are ready for disaster recovery scenarios.
+3. Deployment Workflow
+The deployment is automated through three Jenkins jobs, each designed to handle a specific aspect of the process:
+
+Job 1: Deploy Services and Configurations:
+
+This job deploys services and updates configurations across the servers (production and non-production). It ensures that the services are deployed according to the current configurations stored in Git repositories.
+Job 2: Scheduled Service Deployment:
+
+This job manages scheduled deployments, which can include maintenance windows or planned updates for critical services. It ensures configurations and services are deployed at predefined times with minimal disruption.
+Job 3: Clone Scripts and Repositories:
+
+This job handles cloning the necessary scripts and configurations from Git repositories to the appropriate machines. It ensures that the latest versions of scripts and deployment instructions are always in sync.
+4. Key Features
+Artifact Deployment from Nexus:
+
+The process automates the deployment of artifacts from Nexus to different environments, ensuring consistency and version control across all environments.
+Secrets Management:
+
+Secrets are removed from deployment scripts and stored in HashiCorp Vault, ensuring secure access and limiting exposure of sensitive data.
+Versioning:
+
+The configurations for different environments and services are version-controlled in Git repositories, making it easier to track changes and roll back if necessary.
+Parallel Deployments:
+
+Both active and backup machines for UAT and Production environments are deployed and configured simultaneously to ensure synchronization and readiness for disaster recovery.
+5. Goals and Benefits
+Automate Deployment Processes:
+
+Eliminate manual intervention in deployment processes, reduce human error, and streamline the deployment of services across environments.
+Environment Synchronization:
+
+Maintain consistent service versions and configurations across all environments (production, UAT, development) to avoid discrepancies and ensure smooth transitions.
+Enhanced Security:
+
+Secure communication between different components by moving sensitive data (like API keys and passwords) into Vault, reducing the risk of unauthorized access.
+Disaster Recovery Readiness:
+
+Ensure backup machines are always synchronized with active ones, allowing for immediate failover in the case of system failure or disaster recovery scenarios.
+Improved Management:
+
+Simplify the management of service deployments and configurations using user-friendly interfaces through Jenkins and Ansible.
