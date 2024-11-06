@@ -1,0 +1,13 @@
+pipeline {
+    environment {
+        AGENT_LABEL = 'prod-agent'
+        CUSTOM_PARAM = 'production-value'
+    }
+    stages {
+        stage('Load Common Pipeline') {
+            steps {
+                load 'Jenkinsfile.common'
+            }
+        }
+    }
+}
