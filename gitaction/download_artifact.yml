@@ -1,0 +1,39 @@
+name: Download Artifact from JFrog
+
+on:
+  workflow_dispatch:
+
+jobs:
+  download-artifact:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Search and Download Artifact
+      env:
+        ARTIFACTORY_URL: "https://<artifactory-url>"
+        ARTIFACTORY_USER: ${{ secrets.ARTIFACTORY_USER }}
+        ARTIFACTORY_TOKEN: ${{ secrets.ARTIFACTORY_TOKEN }}
+        REPOSITORY: "<repository-name>"
+        SEARCH_PATH: "com/hps/api/0.1-snapshot/*-1.0-20231212.1223-1.jar"
+      run: |
+        echo "Searching for artifact in $ARTIFACTORY_URL..."
+        
+        # Perform a pattern search in the repository
+        SEARCH_URL="$ARTIFACTORY_URL/api/search/pattern?pattern=$REPOSITORY/$SEARCH_PATH"
+        ARTIFACT=$(curl -s -u $ARTIFACTORY_USER:$ARTIFACTORY_TOKEN "$SEARCH_URL" | jq -r '.files[0]')
+
+        # Check if artifact is found
+        if [ -z "$ARTIFACT" ]; then
+          echo "No artifact found matching $SEARCH_PATH."
+          exit 1
+        fi
+
+        echo "Artifact found: $ARTIFACT"
+        
+        # Download the artifact
+        DOWNLOAD_URL="$ARTIFACTORY_URL/$ARTIFACT"
+        curl -u $ARTIFACTORY_USER:$ARTIFACTORY_TOKEN -O "$DOWNLOAD_URL"
+        echo "Artifact downloaded: $(basename $ARTIFACT)"
