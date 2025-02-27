@@ -60,3 +60,40 @@ Ensure backup machines are always synchronized with active ones, allowing for im
 Improved Management:
 
 Simplify the management of service deployments and configurations using user-friendly interfaces through Jenkins and Ansible.
+
+
+
+
+Git Workflow for Large Multi-Project Application
+
+Branching Strategy
+	1.	Main Branches
+	•	main (or master): Stable, production-ready code. Only updated through releases.
+	•	develop: Integration branch where all features are merged before a release.
+	2.	Feature & Bugfix Branches
+	•	Feature branches: Created from develop. (feature/XYZ-123-new-api)
+	•	Bugfix branches: Created from develop (for pre-release fixes) or main (for hotfixes).
+	3.	Release Branches
+	•	Created each week for new releases: release/1.3.4
+	•	Once tested and approved, merged into main and develop.
+	4.	Hotfix Branches
+	•	For urgent production fixes: hotfix/1.3.4.1
+	•	Merged into both main and develop.
+
+
+Release Process
+	1.	During the Week (Development Phase)
+	•	Developers work on feature branches (feature/xyz-feature).
+	•	Merge into develop via Pull Requests (PRs).
+	•	CI/CD runs tests before merging.
+	2.	Mid-Week (Feature Freeze)
+	•	Identify projects that will be included in the upcoming release.
+	•	Create a release branch from develop (release/1.3.4).
+	3.	End of the Week (Testing & Release)
+	•	QA team tests the release/1.3.4 branch.
+	•	Fixes are applied directly to the release branch.
+	•	Once stable, merge release/1.3.4 into main and tag it (v1.3.4).
+	•	Merge release/1.3.4 back into develop.
+	4.	Next Cycle Begins
+	•	Developers continue working on new features in develop.
+	•	The next release is planned (e.g., release/1.3.5).
