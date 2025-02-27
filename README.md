@@ -97,3 +97,26 @@ Release Process
 	4.	Next Cycle Begins
 	•	Developers continue working on new features in develop.
 	•	The next release is planned (e.g., release/1.3.5).
+
+
+Hotfix
+	•	An issue is detected in production, and a Hotfix branch (pink) is created from main.
+	•	Once the fix is applied, the hotfix branch is merged back into main and Release 1.0.0 to keep everything in sync.
+	3.	Feature Merging
+	•	Feature 1 is completed and merged into Release 1.0.0.
+	•	After validation, Release 1.0.0 is merged into main.
+	4.	Parallel Release Development
+	•	While Release 1.0.0 is being tested, Release 2.0.0 (red) is created from main for another version.
+	•	A new Feature 2 branch (yellow) is created from Release 2.0.0 for additional development.
+	5.	Merging and Updating
+	•	Feature 2 is merged into Release 2.0.0.
+	•	Before merging Release 2.0.0 into main, it is rebased with main to include changes from Release 1.0.0.
+	•	After successful testing, Release 2.0.0 is merged into main.
+
+Conclusion
+
+This workflow allows:
+	•	Parallel releases without blocking development.
+	•	Integration of urgent hotfixes while ensuring they propagate to the necessary branches.
+	•	Ensuring each release includes the latest updates from main before being merged.
+ 
