@@ -17,6 +17,7 @@ while IFS= read -r PROJECT; do
     echo "Processing project: $PROJECT"
 
     # Clone the project
+    
     if [[ -d "$PROJECT" ]]; then
         echo "Repository '$PROJECT' already exists locally, skipping clone."
         cd "$PROJECT" || exit 1
@@ -49,7 +50,19 @@ while IFS= read -r PROJECT; do
         git push -u origin main
         echo "Branch 'main' created and pushed successfully!"
     fi
+   # Change default branch to main using GitHub API
+    echo "Setting 'main' as the default branch for $PROJECT..."
+    RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -X PATCH \
+        -H "Authorization: token $GITHUB_TOKEN" \
+        -H "Accept: application/vnd.github.v3+json" \
+        "https://api.github.com/repos/$GITHUB_ORG/$PROJECT" \
+        -d '{"default_branch":"main"}')
 
+    if [[ "$RESPONSE" -eq 200 ]]; then
+        echo "Default branch changed to 'main' successfully for $PROJECT."
+    else
+        echo "Failed to change default branch for $PROJECT. HTTP Response: $RESPONSE"
+    fi
     cd ..  # Return to parent directory
 
 done < "$PROJECT_LIST"
