@@ -53,3 +53,50 @@ At the end of the job, the workspace is always cleaned — regardless of whether
 PROJECTS = repo-client,repo-backend,repo-shared
 BRANCH_NAME = release-1.2.0
 BRANCH_SOURCE = main
+
+
+
+
+
+# Jenkins Pipeline - Release Package Generator
+
+This Jenkins pipeline is used to **generate release packages** from a predefined list of GitHub repositories using a specific release branch. It is typically run **after** the release branches have been created using the "Release Branch Creator" job.
+
+---
+
+## Purpose
+
+This job automates the process of:
+- Checking out a list of repositories from a shared GitHub organization
+- Switching to a specific release branch
+- Executing build or packaging scripts (e.g., Maven, npm, Gradle)
+- Generating release-ready artifacts
+
+It ensures that all release packages are built from a **frozen state** of code captured in the release branch.
+
+---
+
+## Parameters
+
+| Parameter        | Description                                                                 |
+|------------------|-----------------------------------------------------------------------------|
+| `PROJECTS`       | Comma-separated list of GitHub repository names (e.g. `repo1,repo2`)        |
+| `RELEASE_NAME`   | Name of the release branch to use (e.g. `release-1.2.0`)                    |
+
+---
+
+## How It Works
+
+For each repository in the list:
+1. The repository is cloned from GitHub.
+2. The specified `RELEASE_NAME` branch is checked out.
+3. The build or packaging script is executed depending on the project type.
+4. The release artifacts are archived or uploaded (depending on the pipeline setup).
+
+---
+
+## Example
+
+```text
+PROJECTS = repo-client,repo-backend,repo-shared
+RELEASE_NAME = release-1.2.0
