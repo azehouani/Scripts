@@ -1,0 +1,41 @@
+name: srg-ci-pipeline
+
+on:
+  push:
+    branches:
+      - 'feature/**'
+      - 'release-*'
+      - 'master'
+      - 'develop'
+
+  pull_request:
+    branches:
+      - 'feature/**'
+      - 'release-*'
+      - 'master'
+      - 'develop'
+    types: [opened]
+
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to run the workflow on'
+        required: false
+        default: 'develop'
+      java_version:
+        description: 'Java version to use'
+        required: false
+        default: '11.0.20+8'
+      maven_version:
+        description: 'Maven version to use'
+        required: false
+        default: '3.9.0'
+
+jobs:
+  srg:
+    uses: SRG/gpe-infra-as-code/.github/workflows/ci.yml@master
+    secrets: inherit
+    with:
+      PROJECT_KEY: ${{ vars.PROJECT_KEY }}
+      maven_version: ${{ github.event.inputs.maven_version || '3.9.0' }}
+      java_version: ${{ github.event.inputs.java_version || '11.0.20+8' }}
