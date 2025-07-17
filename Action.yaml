@@ -9,40 +9,31 @@ jobs:
         run: |
           echo "BRANCH_NAME=${GITHUB_REF##*/}" >> $GITHUB_ENV
           echo "COMMIT_HASH=$(git rev-parse --short=5 HEAD)" >> $GITHUB_ENV
+          echo "ARTIFACT_ID=$(mvn help:evaluate -Dexpression=project.artifactId -q -DforceStdout)" >> $GITHUB_ENV
+          echo "GROUP_ID=$(mvn help:evaluate -Dexpression=project.groupId -q -DforceStdout)" >> $GITHUB_ENV
+          echo "BASE_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+          echo "CUSTOM_VERSION=${BASE_VERSION}-${BRANCH_NAME}-${COMMIT_HASH}" >> $GITHUB_ENV
 
-      - name: Display variables
-        run: |
-          echo "Branch: $BRANCH_NAME"
-          echo "Commit: $COMMIT_HASH"
+      - name: Set Custom Version
+        run: mvn versions:set -DnewVersion=${CUSTOM_VERSION}
 
-      - name: Run Maven Build
+      - name: Build with Sources
         env:
           MVN_VIRTUAL: ${{ vars.JF_MVN_VIRTUAL }}
           MVN_REL: ${{ vars.JF_MVN_RELEASES }}
           MVN_SNAP: ${{ vars.JF_MVN_SNAPSHOTS }}
-          TZ: Europe/Paris
         run: |
           jf mvn-config --repo-resolve-releases $MVN_VIRTUAL \
                        --repo-resolve-snapshots $MVN_VIRTUAL \
                        --repo-deploy-releases $MVN_REL \
                        --repo-deploy-snapshots $MVN_SNAP
-          mvn clean install
-
-      - name: Rename Artifact
-        run: |
-          ORIGINAL_JAR=$(find target -name "*.jar" | head -n 1)
-          ARTIFACT_NAME="myapp-${BRANCH_NAME}-${COMMIT_HASH}.jar"
-          mv "$ORIGINAL_JAR" "target/${ARTIFACT_NAME}"
-          echo "ARTIFACT_NAME=$ARTIFACT_NAME" >> $GITHUB_ENV
+          mvn clean install source:jar javadoc:jar
 
       - name: SonarQube Scan
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: ${{ vars.SONAR_HOST_URL }}
-        run: mvn clean verify sonar:sonar -Dsonar.projectKey=${{ inputs.PROJECT_KEY }}
+        run: mvn verify sonar:sonar -Dsonar.projectKey=${{ inputs.PROJECT_KEY }}
 
-      - name: Deploy
-        run: |
-          mvn deploy -DskipTests \
-            -DaltDeploymentRepository=release::default::${{ vars.JF_MVN_RELEASES }} \
-            -Dfile=target/${ARTIFACT_NAME}
+      - name: Deploy to JFrog
+        run: mvn deploy -DskipTests
