@@ -1,0 +1,22 @@
+- name: Upload Artifact to JFrog
+  run: |
+    if [[ "$BRANCH_NAME" == "main" ]]; then
+      echo "Deploying to releases repo: $MVN_REL"
+      mvn deploy -DskipTests \
+        -DaltDeploymentRepository=release::default::${MVN_REL}
+    else
+      echo "Deploying to snapshots repo: $MVN_SNAP"
+      mvn deploy -DskipTests \
+        -DaltDeploymentRepository=snapshot::default::${MVN_SNAP}
+    fi
+
+
+- name: Set Custom Version
+  run: |
+    if [[ "$BRANCH_NAME" == "main" ]]; then
+      CUSTOM_VERSION="${BASE_VERSION}-${BRANCH_NAME}-${COMMIT_HASH}"
+    else
+      CUSTOM_VERSION="${BASE_VERSION}-${BRANCH_NAME}-${COMMIT_HASH}-SNAPSHOT"
+    fi
+    echo "CUSTOM_VERSION=$CUSTOM_VERSION" >> $GITHUB_ENV
+    mvn versions:set -DnewVersion=$CUSTOM_VERSION
