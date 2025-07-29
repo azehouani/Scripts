@@ -4,20 +4,25 @@ import glob
 import subprocess
 
 def build_project(project_type, jar_name, project_name):
-    if project_type == "batch":
-        subprocess.run(["mvn", "clean", "assembly:single", "-Dmaven.test.skip=true"], check=True)
+    match project_type:
+        case "batch":
+            subprocess.run("mvn clean assembly:single -Dmaven.test.skip=true", shell=True, check=True)
 
-    elif project_type == "lib":
-        subprocess.run(["mvn", "clean", "install", "-DskipTests=true"], check=True)
+        case "lib":
+            subprocess.run("mvn clean install -DskipTests=true", shell=True, check=True)
 
-    elif project_type == "api":
-        subprocess.run(["mvn", "clean", "install", "-DskipTests=true"], check=True)
-        assembly_api_project(jar_name, project_name)
+        case "api":
+            subprocess.run("mvn clean install -DskipTests=true", shell=True, check=True)
+            assembly_api_project(jar_name, project_name)
+
+        case _:
+            raise ValueError(f"Unknown project type: {project_type}")
 
 def get_project_type(repo_name):
     try:
         result = subprocess.run(
-            ["mvn", "help:effective-pom"],
+            "mvn help:effective-pom",
+            shell=True,
             stdout=subprocess.PIPE,
             stderr=subprocess.DEVNULL,
             text=True
@@ -35,7 +40,7 @@ def get_project_type(repo_name):
 def assembly_api_project(jar_name, project_name):
     zip_name = f"{jar_name}-dist.zip"
 
-    # Create all required directories
+    # Create required directories
     dirs_to_create = [
         f"{project_name}/conf",
         f"{project_name}/tmp/final",
@@ -47,6 +52,7 @@ def assembly_api_project(jar_name, project_name):
         os.makedirs(d, exist_ok=True)
 
     # Write jar name to file
+    os.makedirs("bin", exist_ok=True)
     with open("bin/jar_name.txt", "w") as f:
         f.write(f"{jar_name}.jar\n")
 
@@ -63,7 +69,7 @@ def assembly_api_project(jar_name, project_name):
     else:
         raise FileNotFoundError(f"JAR file not found: {jar_path}")
 
-    # Create ZIP archive (including project folder itself)
+    # Create ZIP archive (include folder name)
     shutil.make_archive(zip_name.replace(".zip", ""), 'zip', root_dir='.', base_dir=project_name)
 
 def main():
