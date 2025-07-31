@@ -1,0 +1,8 @@
+- name: Upload ZIP to Artifactory
+  if: env.TYPE == 'lib'
+  env:
+    ZIP_FILE: ${{ steps.maven-meta.outputs.zip-path }}
+    REPO_PATH: ${{ steps.maven-meta.outputs.repo-path }}
+    REPO_URL: ${{ steps.maven-meta.outputs.repo-url }}
+  run: |
+    jf rt u "$ZIP_FILE" "${REPO_PATH}" --url="${REPO_URL}" --flat=false
