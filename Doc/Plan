@@ -24,3 +24,23 @@ CD for Batch & API:
 	4.	Test the deployment (API and Batch)
 	5.	Add the CD process to the main workflow in each Java project
 	6.	Test automated deployment for all libraries
+
+
+SRG Kubernetes
+
+CI:
+	1.	Remove the Dockerfile from gpe-infra-as-code and include it in the project sources.
+	2.	Understand the current process (how to build the Docker image and deploy it to the registry).
+	3.	Adapt the new CI to work with the Kubernetes project (build & Sonar).
+	4.	Create the GitAction pipeline:
+	•	Define the Docker image name
+	•	Build the Docker image
+	•	Deploy the image to the Docker registry
+	5.	Create a Helm chart to manage deployments.
+	6.	Test the project deployment.
+
+CD:
+	•	Integrate ArgoCD to automate deployments.
+
+
+
