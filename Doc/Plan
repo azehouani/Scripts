@@ -1,0 +1,26 @@
+SRG VM
+
+CI:
+	•	Pipeline: completed and tested
+	•	Branch updated for use in GitAction workflow
+	•	Create PRs and merge them into all projects
+	•	Ranga can now retrieve artifacts from JFrog
+
+CD for Libraries
+	•	Already included in the CI process (deploy JAR files to JFrog)
+
+CD for Batch & API:
+	1.	Understand the current process for delivering packages to production
+	2.	Create mapping tables per project to stop and restart services during deployment
+	3.	Create the GitAction pipeline:
+	•	Install Ansible, Python, JFrog
+	•	Retrieve artifacts from JFrog using the branch name
+	•	Create the inventory file and verify the connection between GitHub and different environments
+	•	Create an Ansible playbook that allows:
+	•	stopping services based on the mapping table
+	•	extracting the ZIP file and deploying it to the target environment using the project name
+	•	replacing log4j for each project if the library is included
+	•	starting the necessary services
+	4.	Test the deployment (API and Batch)
+	5.	Add the CD process to the main workflow in each Java project
+	6.	Test automated deployment for all libraries
