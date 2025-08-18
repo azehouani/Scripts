@@ -1,0 +1,40 @@
+on:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      java_version:
+        description: "Java version to use"
+        required: false
+        default: "11.0.20+8"
+      maven_version:
+        description: "Maven version to use"
+        required: false
+        default: "3.9.0"
+      environment:
+        description: "Environment to deploy"
+        required: true
+        default: "none"
+        type: choice
+        options:
+          - none
+          - dev
+          - uat
+          - prod
+
+jobs:
+  srg-ci:
+    uses: SRG/automation/.github/workflows/ci.yml@GitAction
+    secrets: inherit
+    with:
+      PROJECT_KEY: ${{ vars.PROJECT_KEY }}
+      maven_version: ${{ github.event.inputs.maven_version || '3.9.0' }}
+      java_version: ${{ github.event.inputs.java_version || '11.0.20+8' }}
+      environment: ${{ github.event.inputs.environment }}
+
+  srg-cd:
+    if: ${{ github.event.inputs.environment != 'none' }}
+    uses: SRG/automation/.github/workflows/cd.yml@GitAction
+    secrets: inherit
+    with:
+      PROJECT_KEY: ${{ vars.PROJECT_KEY }}
+      environment: ${{ github.event.inputs.environment }}
