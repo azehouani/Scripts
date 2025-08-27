@@ -1,0 +1,56 @@
+---
+- name: Deploy project with archiving
+  hosts: target_servers
+  become: true
+  vars:
+    project_dir: "/home/project/project-Name"
+    archive_dir: "/home/project/project-Name/archives"
+    local_zip: "/path/to/project-build.zip"   # path on Ansible control node
+    remote_zip: "/tmp/project-build.zip"
+
+  tasks:
+
+    - name: Ensure archive directory exists
+      file:
+        path: "{{ archive_dir }}"
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Archive current project folder if it exists
+      command: >
+        tar -czf {{ archive_dir }}/project-{{ ansible_date_time.iso8601 }}.tar.gz -C {{ project_dir }} .
+      args:
+        warn: false
+      when: project_dir is exists
+      ignore_errors: yes
+
+    - name: Keep only 2 latest archives
+      shell: |
+        ls -1t {{ archive_dir }}/project-*.tar.gz | tail -n +3 | xargs -r rm -f
+      args:
+        executable: /bin/bash
+
+    - name: Copy zip file from local to remote
+      copy:
+        src: "{{ local_zip }}"
+        dest: "{{ remote_zip }}"
+        mode: '0644'
+
+    - name: Ensure project directory exists
+      file:
+        path: "{{ project_dir }}"
+        state: directory
+
+    - name: Extract the zip file to project directory
+      unarchive:
+        src: "{{ remote_zip }}"
+        dest: "{{ project_dir }}"
+        remote_src: true
+        extra_opts: [ "-o" ]   # overwrite existing files if needed
+
+    - name: Cleanup uploaded zip
+      file:
+        path: "{{ remote_zip }}"
+        state: absent
