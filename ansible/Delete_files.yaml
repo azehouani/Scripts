@@ -1,0 +1,12 @@
+    - name: Find all items inside project directory except archives
+      find:
+        paths: "{{ project_dir }}"
+        file_type: any
+        excludes: "archives"
+      register: project_items
+
+    - name: Remove project files and directories except archives
+      file:
+        path: "{{ item.path }}"
+        state: absent
+      loop: "{{ project_items.files }}"
