@@ -3,19 +3,14 @@ import subprocess
 import sys
 from pathlib import Path
 
-# === Configuration ===
-JSON_PATH = Path("projects.json")   # path to your JSON file
-DEPLOY_SCRIPT = Path("./deploy.sh") # path to your deploy.sh script
-# =====================
-
-def deploy_project(action, project_name):
+def deploy_project(json_path, deploy_script, project_name, action):
     # Load JSON
-    with open(JSON_PATH, "r") as f:
+    with open(json_path, "r") as f:
         projects = json.load(f)
 
     # Check if project exists in JSON
     if project_name not in projects:
-        print(f"❌ Project '{project_name}' not found in {JSON_PATH}")
+        print(f"❌ Project '{project_name}' not found in {json_path}")
         sys.exit(1)  # exit with error
     
     values = projects[project_name]
@@ -24,19 +19,21 @@ def deploy_project(action, project_name):
         print(f"NO AUTOSTS PROCESS TO STOP FOR {project_name}")
     else:
         for value in values:
-            print(f"Executing: {DEPLOY_SCRIPT} {action} {value}")
-            subprocess.run([str(DEPLOY_SCRIPT), action, value], check=True)
+            print(f"Executing: {deploy_script} {action} {value}")
+            subprocess.run([str(deploy_script), action, value], check=True)
 
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print("Usage: python deploy.py <status|stop|start> <project_name>")
+    if len(sys.argv) != 5:
+        print("Usage: python deploy.py <json_path> <deploy_script> <project_name> <status|stop|start>")
         sys.exit(1)
 
-    action = sys.argv[1]
-    project_name = sys.argv[2]
+    json_path = Path(sys.argv[1])
+    deploy_script = Path(sys.argv[2])
+    project_name = sys.argv[3]
+    action = sys.argv[4]
 
     if action not in ["status", "stop", "start"]:
         print("❌ Action must be one of: status | stop | start")
         sys.exit(1)
 
-    deploy_project(action, project_name)
+    deploy_project(json_path, deploy_script, project_name, action)
