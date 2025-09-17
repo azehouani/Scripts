@@ -1,0 +1,41 @@
+on:
+  workflow_dispatch:
+    inputs:
+      maven_version:
+        description: "Maven version to use"
+        required: false
+        default: "3.9.0"
+      environment:
+        description: "Environment to deploy"
+        required: true
+        default: "none"
+        type: choice
+        options:
+          - none
+          - DEV
+          - UAT
+          - PPROD
+      only_deploy:
+        description: "Run only deploy (skip build)?"
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  srg-ci:
+    if: ${{ github.event.inputs.only_deploy != 'true' }}
+    uses: SRG/automation/.github/workflows/ci.yml@GitAction
+    secrets: inherit
+    with:
+      PROJECT_KEY: ${{ vars.PROJECT_KEY }}
+      maven_version: ${{ github.event.inputs.maven_version || '3.9.0' }}
+      java_version: ${{ github.event.inputs.java_version || '11.0.20+8' }}
+
+  srg-cd:
+    if: ${{ github.event.inputs.environment != 'none' }}
+    needs: ${{ github.event.inputs.only_deploy == 'true' && '' || 'srg-ci' }}
+    uses: SRG/automation/.github/workflows/cd.yml@GitAction
+    secrets: inherit
+    with:
+      PROJECT_KEY: ${{ vars.PROJECT_KEY }}
+      environment: ${{ github.event.inputs.environment }}
