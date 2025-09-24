@@ -1,0 +1,18 @@
+- name: Ensure log4j jar is updated from JFrog
+  hosts: all
+  vars:
+    jfrog_url: "https://your.jfrog.server/artifactory/libs-release-local/log4j/log4j-1.2.17.jar"
+    dest_dir: "/path/to/project/lib"
+    jar_name: "log4j-1.2.17.jar"
+  tasks:
+    - name: Check if log4j jar exists
+      ansible.builtin.stat:
+        path: "{{ dest_dir }}/{{ jar_name }}"
+      register: log4j_stat
+
+    - name: Download log4j jar from JFrog
+      ansible.builtin.get_url:
+        url: "{{ jfrog_url }}"
+        dest: "{{ dest_dir }}/{{ jar_name }}"
+        mode: '0644'
+      when: log4j_stat.stat.exists
