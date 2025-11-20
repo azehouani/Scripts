@@ -1,0 +1,65 @@
+name: Set Version and Environment
+
+on:
+  push:
+    branches:
+      - '**'
+  pull_request:
+
+jobs:
+  set-version:
+    runs-on: ubuntu-latest
+    env:
+      PROJECT_NAME: my-project
+      GROUP_ID: my.group.id
+      BASE_VERSION: 1.2.3
+      REPO_NAME: ${{ github.repository }}
+      BRANCH_NAME: ${{ github.ref_name }}
+      COMMIT_HASH: ${{ github.sha }}
+      BRANCH_NAME_REFACTORED: ${{ github.ref_name//\//- }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set custom version
+        run: |
+          # Export basic env variables
+          echo "PROJECT_NAME=$PROJECT_NAME" >> $GITHUB_ENV
+          echo "GROUP_ID=$GROUP_ID" >> $GITHUB_ENV
+
+          # Functions
+          is_release_branch() {
+            [[ "$BRANCH_NAME" =~ ^(main|master|release-.*)$ ]]
+          }
+
+          is_lib_repo() {
+            [[ "$REPO_NAME" == *"-libs-"* || "$REPO_NAME" == *"-lib-"* ]]
+          }
+
+          # Version calculation
+          if is_release_branch; then
+            if is_lib_repo; then
+              CUSTOM_VERSION="${BASE_VERSION}"
+            else
+              CUSTOM_VERSION="${BASE_VERSION}-${BRANCH_NAME_REFACTORED}-${COMMIT_HASH}"
+            fi
+          else
+            if is_lib_repo; then
+              CUSTOM_VERSION="${BASE_VERSION}-SNAPSHOT"
+            else
+              CUSTOM_VERSION="${BASE_VERSION}-${BRANCH_NAME_REFACTORED}-${COMMIT_HASH}-SNAPSHOT"
+            fi
+          fi
+
+          echo "CUSTOM_VERSION=$CUSTOM_VERSION" >> $GITHUB_ENV
+
+          JAR_NAME="${PROJECT_NAME}-${CUSTOM_VERSION}"
+          echo "JAR_NAME=$JAR_NAME" >> $GITHUB_ENV
+
+      - name: Display Environment Variables
+        run: |
+          echo "PROJECT_NAME: $PROJECT_NAME"
+          echo "GROUP_ID: $GROUP_ID"
+          echo "CUSTOM_VERSION: $CUSTOM_VERSION"
+          echo "JAR_NAME: $JAR_NAME"
